@@ -1,0 +1,18 @@
+{
+  "name": "apidb",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "apidb": "./src/cli.js"
+  },
+  "scripts": {
+    "test": "node --test",
+    "apidb": "node src/cli.js"
+  },
+  "dependencies": {
+    "commander": "^12.1.0",
+    "ipaddr.js": "^2.2.0",
+    "yaml": "^2.5.1"
+  }
+}

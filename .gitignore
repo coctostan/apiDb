@@ -1,0 +1,10 @@
+# apidb derived artifacts
+.apidb/
+
+# Node / build
+node_modules/
+dist/
+coverage/
+
+# OS
+.DS_Store
