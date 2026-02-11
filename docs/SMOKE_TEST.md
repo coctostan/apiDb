@@ -7,7 +7,9 @@ This repo includes a quick end-to-end smoke test script that exercises the **CLI
 - Workspace init (`apidb init`)
 - Add OpenAPI sources from **local JSON** and **local YAML** fixtures (with sync)
 - Search sanity (verifies both sources contribute docs)
-- Exact lookups (verifies v1 behavior: `op`/`schema` **require** `--source`)
+- Exact lookups (v2 behavior)
+  - `op GET /pets` without `--source` fails with ambiguity when multiple enabled sources match
+  - after disabling one source + sync, `op GET /pets` and `schema Pet` without `--source` succeed when unambiguous
 - Strict vs partial sync behavior
   - strict sync fails when an enabled source fails
   - last-good index is preserved (search still works after failure)

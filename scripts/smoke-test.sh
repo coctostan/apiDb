@@ -45,15 +45,27 @@ SEARCH_OUT="$(node src/cli.js search pets --root "$ROOT" --json)"
 [[ "$SEARCH_OUT" == *"op:petyaml:GET:/pets"* ]] || fail "search missing op:petyaml:GET:/pets"
 pass "search includes both sources"
 
-say "Exact op lookup (requires --source in v1)"
-OP_OUT="$(node src/cli.js op GET /pets --source petjson --root "$ROOT" --json)"
-[[ "$OP_OUT" == *"op:petjson:GET:/pets"* ]] || fail "op lookup missing expected docId"
-pass "op exact lookup"
+say "Exact op lookup: ambiguous without --source when multiple enabled"
+set +e
+AMB_OP_OUT="$(node src/cli.js op GET /pets --root "$ROOT" --json 2>&1)"
+AMB_OP_CODE=$?
+set -e
+[[ $AMB_OP_CODE -ne 0 ]] || fail "op without --source unexpectedly succeeded"
+[[ "$AMB_OP_OUT" == *"Ambiguous operation"* ]] || fail "expected ambiguous op error; got: $AMB_OP_OUT"
+pass "op ambiguity error"
 
-say "Exact schema lookup (requires --source in v1)"
-SCHEMA_OUT="$(node src/cli.js schema Pet --source petjson --root "$ROOT" --json)"
+say "Exact lookup without --source succeeds when unambiguous"
+# Disable one source so resolution is unambiguous
+node -e 'const fs=require("fs"); const p=process.argv[1]; const cfg=JSON.parse(fs.readFileSync(p,"utf8")); cfg.sources=cfg.sources.map(s=>s.id==="petyaml"?{...s,enabled:false}:s); fs.writeFileSync(p, JSON.stringify(cfg,null,2));' "$ROOT/.apidb/config.json"
+node src/cli.js sync --root "$ROOT" >/dev/null
+
+OP_OUT="$(node src/cli.js op GET /pets --root "$ROOT" --json)"
+[[ "$OP_OUT" == *"op:petjson:GET:/pets"* ]] || fail "op lookup missing expected docId"
+pass "op exact lookup without --source"
+
+SCHEMA_OUT="$(node src/cli.js schema Pet --root "$ROOT" --json)"
 [[ "$SCHEMA_OUT" == *"schema:petjson:Pet"* ]] || fail "schema lookup missing expected docId"
-pass "schema exact lookup"
+pass "schema exact lookup without --source"
 
 say "URL safety (private/loopback denied by default)"
 node src/cli.js add openapi "http://127.0.0.1:1234/openapi.json" --id localurl --no-sync --root "$ROOT" >/dev/null
