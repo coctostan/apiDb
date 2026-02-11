@@ -65,11 +65,12 @@ export async function syncWorkspace({
       await fs.unlink(tmpPath);
     } catch {}
 
-    // Open persistent state DB for caching
-    const stateDb = await openStateDb({ root });
-
-    const db = new DatabaseSync(tmpPath);
+    let stateDb = null;
+    let db = null;
     try {
+      // Open persistent state DB for caching
+      stateDb = await openStateDb({ root });
+      db = new DatabaseSync(tmpPath);
       initDb(db);
 
       const insertSource = db.prepare(
@@ -135,17 +136,21 @@ export async function syncWorkspace({
       await fs.rename(tmpPath, finalPath);
       return { sourcesProcessed: enabledSources.length, docsInserted: allDocs.length };
     } catch (e) {
-      try {
-        db.close();
-      } catch {}
+      if (db) {
+        try {
+          db.close();
+        } catch {}
+      }
       try {
         await fs.unlink(tmpPath);
       } catch {}
       throw e;
     } finally {
-      try {
-        stateDb.close();
-      } catch {}
+      if (stateDb) {
+        try {
+          stateDb.close();
+        } catch {}
+      }
     }
   });
 }

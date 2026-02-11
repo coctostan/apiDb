@@ -54,9 +54,11 @@ test('initStateDb: creates source_blobs table with correct columns and CHECK con
     'blobPath'
   ]);
 
-  // sha256 is PRIMARY KEY
-  const pk = info.find((r) => r.name === 'sha256');
-  assert.equal(pk.pk, 1);
+  // composite PRIMARY KEY (sourceId, sha256)
+  const sourcePk = info.find((r) => r.name === 'sourceId');
+  const shaPk = info.find((r) => r.name === 'sha256');
+  assert.equal(sourcePk.pk, 1);
+  assert.equal(shaPk.pk, 2);
 
   // NOT NULL columns
   for (const col of ['sourceId', 'fetchedAt', 'kind', 'location', 'bytesLength', 'blobPath']) {

@@ -40,9 +40,17 @@ export function upsertHttpCacheRow(db, row) {
 
 export function insertBlobRow(db, row) {
   db.prepare(`
-    INSERT OR REPLACE INTO source_blobs
+    INSERT INTO source_blobs
       (sha256, sourceId, fetchedAt, kind, location, effectiveUrl, contentType, bytesLength, blobPath)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ON CONFLICT(sourceId, sha256) DO UPDATE SET
+      fetchedAt = excluded.fetchedAt,
+      kind = excluded.kind,
+      location = excluded.location,
+      effectiveUrl = excluded.effectiveUrl,
+      contentType = excluded.contentType,
+      bytesLength = excluded.bytesLength,
+      blobPath = excluded.blobPath
   `).run(
     row.sha256,
     row.sourceId,

@@ -91,7 +91,7 @@ test('insertBlobRow: inserts a blob row', () => {
   db.close();
 });
 
-test('insertBlobRow: replaces existing row with same sha256', () => {
+test('insertBlobRow: replaces existing row with same sha256 for same source', () => {
   const db = memDb();
   const base = {
     sha256: 'abc123',
@@ -106,9 +106,35 @@ test('insertBlobRow: replaces existing row with same sha256', () => {
   };
   insertBlobRow(db, base);
   insertBlobRow(db, { ...base, fetchedAt: '2025-01-02T00:00:00Z' });
-  const rows = db.prepare("SELECT * FROM source_blobs WHERE sha256 = 'abc123'").all();
+  const rows = db.prepare("SELECT * FROM source_blobs WHERE sourceId = 's1' AND sha256 = 'abc123'").all();
   assert.equal(rows.length, 1);
   assert.equal(rows[0].fetchedAt, '2025-01-02T00:00:00Z');
+  db.close();
+});
+
+test('insertBlobRow: allows same sha256 for different sources', () => {
+  const db = memDb();
+  const shared = {
+    sha256: 'samehash',
+    fetchedAt: '2025-01-01T00:00:00Z',
+    kind: 'url',
+    location: 'http://example.com/spec',
+    effectiveUrl: null,
+    contentType: 'application/json',
+    bytesLength: 100,
+    blobPath: '/tmp/blobs/samehash.bin'
+  };
+
+  insertBlobRow(db, { ...shared, sourceId: 's1' });
+  insertBlobRow(db, { ...shared, sourceId: 's2' });
+
+  const rows = db.prepare("SELECT sourceId, sha256 FROM source_blobs WHERE sha256 = 'samehash' ORDER BY sourceId").all();
+  const plainRows = rows.map((r) => ({ sourceId: r.sourceId, sha256: r.sha256 }));
+  assert.deepEqual(plainRows, [
+    { sourceId: 's1', sha256: 'samehash' },
+    { sourceId: 's2', sha256: 'samehash' }
+  ]);
+
   db.close();
 });
 
