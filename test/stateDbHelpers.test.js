@@ -301,3 +301,75 @@ test('pruneBlobsKeepLatestPerSource: handles missing blob file gracefully', asyn
   assert.equal(gone, undefined);
   db.close();
 });
+
+test('pruneBlobsKeepLatestPerSource: does not delete shared blob file still referenced by another source', async () => {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'apidb-prune-'));
+  await ensureBlobDir({ root });
+
+  const db = memDb();
+
+  const sharedBytes = Buffer.from('shared content');
+  const sharedSha = sha256Hex(sharedBytes);
+  const { blobPath: sharedBlobPath } = await writeBlobIfMissing({
+    root,
+    sha256: sharedSha,
+    bytes: sharedBytes
+  });
+
+  insertBlobRow(db, {
+    sha256: sharedSha,
+    sourceId: 's1',
+    fetchedAt: '2025-01-01T00:00:00Z',
+    kind: 'url',
+    location: 'http://s1/spec',
+    effectiveUrl: null,
+    contentType: null,
+    bytesLength: sharedBytes.length,
+    blobPath: sharedBlobPath
+  });
+  insertBlobRow(db, {
+    sha256: sharedSha,
+    sourceId: 's2',
+    fetchedAt: '2025-01-01T00:00:00Z',
+    kind: 'url',
+    location: 'http://s2/spec',
+    effectiveUrl: null,
+    contentType: null,
+    bytesLength: sharedBytes.length,
+    blobPath: sharedBlobPath
+  });
+
+  const newerBytes = Buffer.from('newer s1 content');
+  const newerSha = sha256Hex(newerBytes);
+  const { blobPath: newerBlobPath } = await writeBlobIfMissing({
+    root,
+    sha256: newerSha,
+    bytes: newerBytes
+  });
+
+  insertBlobRow(db, {
+    sha256: newerSha,
+    sourceId: 's1',
+    fetchedAt: '2025-01-02T00:00:00Z',
+    kind: 'url',
+    location: 'http://s1/spec',
+    effectiveUrl: null,
+    contentType: null,
+    bytesLength: newerBytes.length,
+    blobPath: newerBlobPath
+  });
+
+  await pruneBlobsKeepLatestPerSource(db, { root, sourceId: 's1' });
+
+  // s1 old row pruned
+  const s1Old = db.prepare("SELECT * FROM source_blobs WHERE sourceId = 's1' AND sha256 = ?").get(sharedSha);
+  assert.equal(s1Old, undefined);
+
+  // s2 row still references shared hash
+  const s2Shared = db.prepare("SELECT * FROM source_blobs WHERE sourceId = 's2' AND sha256 = ?").get(sharedSha);
+  assert.ok(s2Shared);
+
+  // shared blob file must still exist because s2 still references it
+  await fs.access(sharedBlobPath);
+  db.close();
+});

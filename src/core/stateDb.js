@@ -90,8 +90,16 @@ export async function pruneBlobsKeepLatestPerSource(db, { root, sourceId }) {
     WHERE sourceId = ? AND sha256 != ?
   `).run(sourceId, latest.sha256);
 
-  // Best-effort delete blob files
+  // Best-effort delete blob files, but only if no other source row still references the same hash
+  const hasOtherRefs = db.prepare(`
+    SELECT 1 FROM source_blobs
+    WHERE sha256 = ? AND sourceId != ?
+    LIMIT 1
+  `);
   for (const row of older) {
+    const inUseElsewhere = hasOtherRefs.get(row.sha256, sourceId);
+    if (inUseElsewhere) continue;
+
     try {
       await fs.unlink(row.blobPath);
     } catch {
