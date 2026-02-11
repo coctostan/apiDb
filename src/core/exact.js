@@ -107,7 +107,7 @@ async function resolveSchemaDocIdWithoutSource({ root, schemaName }) {
   });
 }
 
-export function resolveOperationDocId({ root, method, path, sourceId }) {
+export async function resolveOperationDocId({ root, method, path, sourceId }) {
   if (sourceId != null) {
     return opDocId({ sourceId, method, path });
   }
@@ -115,7 +115,7 @@ export function resolveOperationDocId({ root, method, path, sourceId }) {
   return resolveOperationDocIdWithoutSource({ root, method, path });
 }
 
-export function resolveSchemaDocId({ root, schemaName, sourceId }) {
+export async function resolveSchemaDocId({ root, schemaName, sourceId }) {
   if (sourceId != null) {
     return schemaDocId({ sourceId, schemaName });
   }

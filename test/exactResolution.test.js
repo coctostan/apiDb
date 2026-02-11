@@ -96,3 +96,15 @@ test('resolveSchemaDocId: without --source errors when ambiguous across enabled 
     /Ambiguous schema/i
   );
 });
+
+test('resolveOperationDocId: with --source returns a promise that resolves to exact id', async () => {
+  const result = resolveOperationDocId({ root: '/unused', method: 'get', path: '/pets', sourceId: 'petjson' });
+  assert.ok(result instanceof Promise);
+  assert.equal(await result, 'op:petjson:GET:/pets');
+});
+
+test('resolveSchemaDocId: with --source returns a promise that resolves to exact id', async () => {
+  const result = resolveSchemaDocId({ root: '/unused', schemaName: 'Pet', sourceId: 'petjson' });
+  assert.ok(result instanceof Promise);
+  assert.equal(await result, 'schema:petjson:Pet');
+});

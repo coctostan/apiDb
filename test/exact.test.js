@@ -32,6 +32,6 @@ async function mkRoot() {
 
 test('resolveOperationDocId: returns deterministic docId', async () => {
   await mkRoot();
-  const id = resolveOperationDocId({ method: 'GET', path: '/pets', sourceId: 'pet' });
+  const id = await resolveOperationDocId({ method: 'GET', path: '/pets', sourceId: 'pet' });
   assert.equal(id, 'op:pet:GET:/pets');
 });
