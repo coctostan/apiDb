@@ -39,6 +39,16 @@ Show a specific doc:
 node src/cli.js show op:stripe:GET:/v1/customers --json
 ```
 
+## Exact lookups
+If you already know the method/path or schema name, you can do exact retrieval:
+
+```bash
+node src/cli.js op GET /v1/customers --source stripe --json
+node src/cli.js schema Customer --source stripe --json
+```
+
+(Planned v2 improvement: allow omitting `--source` when unambiguous.)
+
 ## Sync behavior
 
 - Sync is strict by default: any enabled source failure fails the sync.
@@ -49,3 +59,26 @@ node src/cli.js show op:stripe:GET:/v1/customers --json
 
 - URL sources deny localhost/private/loopback targets by default.
 - To opt in to private network fetching, use `--allow-private-net` with `sync`.
+
+## Testing
+
+- Unit tests:
+
+```bash
+npm test
+```
+
+- End-to-end CLI smoke test:
+
+```bash
+./scripts/smoke-test.sh
+# KEEP=1 ./scripts/smoke-test.sh
+```
+
+See `docs/SMOKE_TEST.md`.
+
+## Docs
+
+- `docs/INDEX.md` (start here)
+- `docs/PROJECT_CONTEXT.md` (current invariants + CLI surface)
+- `docs/plans/2026-02-10-apidb-roadmap.md` (v2/v3 roadmap)

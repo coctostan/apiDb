@@ -75,7 +75,11 @@ Rules:
 - `apidb list` (sources + last sync summary + doc counts + last error per source)
 - `apidb search <query> [--kind operation|schema|any] [--source <id>] [--limit N] [--json]`
 - `apidb show <docId> [--json]`
+- `apidb op <METHOD> <PATH> --source <id> [--json]` (exact operation lookup)
+- `apidb schema <NAME> --source <id> [--json]` (exact schema lookup)
 - `apidb root [--verbose]`
+
+Note: the v1 implementation requires `--source` for `op`/`schema`. Planned (v2): allow omitting `--source` with ambiguity resolution.
 
 Defaults:
 - `sync` defaults to `--strict` unless `--allow-partial` is passed.
@@ -117,7 +121,8 @@ CREATE TABLE source_status (
   FOREIGN KEY(sourceId) REFERENCES sources(id)
 );
 
--- Optional but recommended
+-- Optional (v2+): raw spec persistence for debugging/offline rebuilds.
+-- Note: not implemented in the current v1 DB schema.
 CREATE TABLE source_blobs (
   sourceId TEXT PRIMARY KEY,
   fetchedAt TEXT NOT NULL,
@@ -151,7 +156,7 @@ CREATE VIRTUAL TABLE docs_fts USING fts5(
 
 Notes:
 - `docs.json` must be **bounded** (avoid storing whole spec per doc).
-- `source_blobs` stores the spec once (useful for debugging/future).
+- `source_blobs` (if implemented) stores the raw spec once (useful for debugging/future; planned v2+).
 
 ---
 
@@ -192,7 +197,7 @@ For each `components.schemas[name]`:
    - (Optional) save spec bytes to `source_blobs` if parse succeeded.
 5. Build `index.sqlite.tmp`:
    - create schema
-   - insert `sources`, `source_status`, `source_blobs`, `docs`
+   - insert `sources`, `source_status`, `docs` (and `source_blobs` if implemented)
    - populate `docs_fts`
    - all inside a transaction
 6. **Strict mode**: if any enabled source fails → abort, delete tmp, keep last-good DB, exit non-zero.
