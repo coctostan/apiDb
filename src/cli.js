@@ -165,11 +165,11 @@ commonRootOption(
   program
     .command('op <method> <path>')
     .description('show operation doc by exact method/path/source')
-    .requiredOption('--source <id>', 'source id')
+    .option('--source <id>', 'source id')
     .option('--json', 'machine-readable JSON')
     .action(async (method, p, opts) => {
       const { root } = await findWorkspaceRoot({ cwd: process.cwd(), rootFlag: opts.root });
-      const id = resolveOperationDocId({ method, path: p, sourceId: opts.source });
+      const id = await resolveOperationDocId({ root, method, path: p, sourceId: opts.source ?? null });
       const doc = await getDocById({ root, id });
       if (opts.json) {
         process.stdout.write(`${JSON.stringify({ docId: id, doc }, null, 2)}\n`);
@@ -183,11 +183,11 @@ commonRootOption(
   program
     .command('schema <name>')
     .description('show schema doc by exact name/source')
-    .requiredOption('--source <id>', 'source id')
+    .option('--source <id>', 'source id')
     .option('--json', 'machine-readable JSON')
     .action(async (name, opts) => {
       const { root } = await findWorkspaceRoot({ cwd: process.cwd(), rootFlag: opts.root });
-      const id = resolveSchemaDocId({ schemaName: name, sourceId: opts.source });
+      const id = await resolveSchemaDocId({ root, schemaName: name, sourceId: opts.source ?? null });
       const doc = await getDocById({ root, id });
       if (opts.json) {
         process.stdout.write(`${JSON.stringify({ docId: id, doc }, null, 2)}\n`);
