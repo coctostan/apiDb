@@ -30,7 +30,7 @@ describe('CI workflow', () => {
     assert.strictEqual(job['runs-on'], 'ubuntu-latest');
   });
 
-  it('has checkout, setup-node@v4 with node 20.x + npm cache, npm ci, npm test, smoke-test steps', () => {
+  it('has checkout, setup-node@v4 with node 22.x + npm cache, npm ci, npm test, smoke-test steps', () => {
     const raw = readFileSync(WORKFLOW_PATH, 'utf8');
     wf = parse(raw);
     const job = wf.jobs.ci ?? wf.jobs.test ?? Object.values(wf.jobs)[0];
@@ -43,7 +43,7 @@ describe('CI workflow', () => {
     // setup-node@v4
     const setupNode = steps.find(s => s.uses && s.uses.startsWith('actions/setup-node@v4'));
     assert.ok(setupNode, 'has setup-node@v4 step');
-    assert.strictEqual(setupNode.with['node-version'], '20.x');
+    assert.strictEqual(setupNode.with['node-version'], '22.x');
     assert.strictEqual(setupNode.with.cache, 'npm');
 
     // npm ci
