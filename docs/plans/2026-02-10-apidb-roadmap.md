@@ -18,9 +18,9 @@ This roadmap captures the **post-v1** work items and design intel from the brain
 ### Theme A — Sync durability & debuggability (v2)
 **Goal:** make sync faster, cheaper, and easier to debug without sacrificing correctness.
 
-- **Best-effort sync mode** (opt-in):
-  - `apidb sync --allow-partial` / `--skip-failed`
-  - `apidb list` must clearly show which sources are stale/failed
+- **Best-effort sync mode** (done in v1; polish in v2):
+  - `apidb sync --allow-partial` (continue on per-source failures)
+  - `apidb list` should clearly show which sources are stale/failed (improve human output as needed)
   - avoid silent disappearance; always show source health
 - **HTTP caching** when fetching specs:
   - ETag / If-None-Match
@@ -50,8 +50,8 @@ This roadmap captures the **post-v1** work items and design intel from the brain
 ### Theme D — Safety (v2)
 **Goal:** reduce SSRF-style risk when fetching URLs.
 
-- Deny private/loopback IP ranges by default for URL fetching
-- `--allow-private-net` escape hatch
+- Deny private/loopback IP ranges by default for URL fetching (done in v1)
+- `--allow-private-net` escape hatch (done in v1)
 - Optional allowlist/denylist by host
 
 ### Theme E — Adapters & ecosystem (v2)

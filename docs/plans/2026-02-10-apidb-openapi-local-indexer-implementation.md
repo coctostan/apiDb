@@ -1,6 +1,7 @@
 # apidb v1 (OpenAPI sync + SQLite FTS) Implementation Plan
 
-> **REQUIRED SUB-SKILL:** Use the executing-plans skill to implement this plan task-by-task.
+> **Status:** This plan has been executed; the v1 implementation exists in this repo.
+> Retained as an implementation log/checklist (historical reference).
 
 **Goal:** Implement a local-first `apidb` CLI that can register OpenAPI (JSON/YAML) sources, sync them into a local SQLite FTS5 index, and support bounded offline search + retrieval.
 
@@ -10,12 +11,11 @@
 
 ---
 
-## Pre-flight notes (read before starting)
-- This repo currently contains only docs. You will be creating the entire implementation from scratch.
+## Pre-flight notes (read before using this document)
+- The v1 implementation is already present; use this plan as a reference for what was built.
+- Verification: run `npm test`.
 - The plan assumes a *workspace root* where `.apidb/` is created.
-- The plan includes `git commit` steps. If this directory is not a git repo, either:
-  - run `git init` once (recommended), or
-  - skip commit steps.
+- The plan includes `git commit` steps; adapt as needed.
 
 ## Directory layout to create
 - `package.json`

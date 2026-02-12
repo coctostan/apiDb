@@ -132,8 +132,10 @@ These are roadmap items only if they serve the primary value proposition (determ
 
 ## 7) Proposed retrieval contract (v1)
 In addition to free-text search:
-- Exact operation retrieval: `apidb op <METHOD> <PATH> [--source <id>]`
-- Exact schema retrieval: `apidb schema <Name> [--source <id>]`
+- Exact operation retrieval: `apidb op <METHOD> <PATH> --source <id>`
+- Exact schema retrieval: `apidb schema <Name> --source <id>`
+
+Planned (v2): allow omitting `--source` when unambiguous, with clear ambiguity errors.
 
 Both should map to deterministic doc IDs:
 - `op:${sourceId}:${METHOD}:${path}`

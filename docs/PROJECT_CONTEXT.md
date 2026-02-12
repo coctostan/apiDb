@@ -1,8 +1,8 @@
 ---
 project: apidb
-status: v1-design
+status: v1-implemented
 source: docs/plans/2026-02-10-apidb-openapi-local-indexer-design.md
-updated: 2026-02-10
+updated: 2026-02-11
 ---
 
 # Project context (lightweight)
@@ -17,6 +17,11 @@ Primary consumers:
 - Developers in a shell (CLI)
 - Coding agents (via bounded output + stable JSON)
 - pi extension tools (thin wrapper over the same core)
+
+## Current status
+- v1 CLI + core implementation exists in this repo.
+- Verification: `npm test` (Node’s built-in test runner).
+- Note on exact lookup: the current CLI requires `--source` for `op` and `schema`. The “omit `--source` + ambiguity resolution” UX is a planned v2 improvement.
 
 ## v1 scope (intentionally narrow)
 In scope:
@@ -71,8 +76,8 @@ Deterministic IDs:
 - `apidb list` (sources + last sync summary)
 - `apidb search <query> [--kind operation|schema|any] [--source <id>] [--limit N] [--json]`
 - `apidb show <docId> [--json]`
-- `apidb op <METHOD> <PATH> [--source <id>] [--json]` (exact)
-- `apidb schema <NAME> [--source <id>] [--json]` (exact)
+- `apidb op <METHOD> <PATH> --source <id> [--json]` (exact)
+- `apidb schema <NAME> --source <id> [--json]` (exact)
 - `apidb root [--verbose]`
 
 Defaults:
@@ -141,9 +146,12 @@ Thin wrapper over the same core library:
 - Dependency choices (OpenAPI parser, YAML parser, SQLite driver)
 - Logging/verbosity flags
 
-## Next step (smallest slice)
-Implement the “happy path” for a single OpenAPI spec:
-- `init` → create config
-- `add` → write source + sync
-- `sync` → build SQLite + FTS
-- `search`/`show` → query + render bounded output
+## Quick verification
+- Unit tests: `npm test`
+- End-to-end smoke test: `./scripts/smoke-test.sh` (see `docs/SMOKE_TEST.md`)
+
+## Next steps (v2 candidates)
+- Allow omitting `--source` for `op`/`schema` when unambiguous (with clear ambiguity errors)
+- HTTP caching (ETag/Last-Modified) for URL sources
+- Optional raw-spec persistence (`source_blobs`) for debugging/offline rebuilds
+- Improve `apidb list` human output (health/staleness/error visibility)

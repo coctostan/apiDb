@@ -103,6 +103,8 @@ Optional safety file (nice-to-have): `.apidb/index.sqlite.bak` (previous last-go
 - `apidb schema <NAME> [--source <id>] [--json]` — exact schema lookup
 - `apidb root [--verbose]` — print detected workspace root + reason.
 
+Note: the current v1 implementation requires `--source` for `op`/`schema`. Planned (v2): allow omitting `--source` when unambiguous.
+
 Defaults:
 - `search --limit` defaults to 10 (cap at 50).
 - human output is bounded and summary-first.
@@ -211,6 +213,9 @@ Ranking heuristics (v1, simple):
 
 ### 12.1 Exact retrieval (`op` / `schema`)
 Exact retrieval is preferred when the caller already knows the identifier.
+
+> **Status (v1 implementation):** the current CLI requires `--source <id>` for `op` and `schema`.
+> The “omit `--source` + ambiguity resolution” behavior below is planned (v2).
 
 - `apidb op <METHOD> <PATH>` resolves the deterministic document ID:
   - `op:${sourceId}:${METHOD}:${path}`

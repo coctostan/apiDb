@@ -9,6 +9,7 @@ import { loadConfig } from './config.js';
 import { fetchSourceBytes } from './fetchSource.js';
 import { withWorkspaceLock } from './lock.js';
 import { nowIso } from './util.js';
+import { openStateDb } from './stateDb.js';
 
 export function insertDocs(db, docs) {
   const ins = db.prepare(`
@@ -64,8 +65,12 @@ export async function syncWorkspace({
       await fs.unlink(tmpPath);
     } catch {}
 
-    const db = new DatabaseSync(tmpPath);
+    let stateDb = null;
+    let db = null;
     try {
+      // Open persistent state DB for caching
+      stateDb = await openStateDb({ root });
+      db = new DatabaseSync(tmpPath);
       initDb(db);
 
       const insertSource = db.prepare(
@@ -93,7 +98,10 @@ export async function syncWorkspace({
           const { bytes } = await fetchSourceBytes({
             location: s.location,
             maxBytes: maxSpecBytes,
-            allowPrivateNet
+            allowPrivateNet,
+            stateDb,
+            sourceId: s.id,
+            root
           });
 
           const spec = parseOpenApiBytes({ bytes, filename: s.location });
@@ -128,13 +136,21 @@ export async function syncWorkspace({
       await fs.rename(tmpPath, finalPath);
       return { sourcesProcessed: enabledSources.length, docsInserted: allDocs.length };
     } catch (e) {
-      try {
-        db.close();
-      } catch {}
+      if (db) {
+        try {
+          db.close();
+        } catch {}
+      }
       try {
         await fs.unlink(tmpPath);
       } catch {}
       throw e;
+    } finally {
+      if (stateDb) {
+        try {
+          stateDb.close();
+        } catch {}
+      }
     }
   });
 }
