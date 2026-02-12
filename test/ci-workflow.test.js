@@ -36,7 +36,7 @@ describe('CI workflow', () => {
     const job = wf.jobs.ci ?? wf.jobs.test ?? Object.values(wf.jobs)[0];
     const steps = job.steps;
 
-    assert.deepStrictEqual(job.strategy.matrix['node-version'], ['22.5.0', '22.x']);
+    assert.deepStrictEqual(job.strategy.matrix['node-version'], ['22.22.0', '22.x']);
 
     // checkout
     const checkout = steps.find(s => s.uses && s.uses.startsWith('actions/checkout'));
