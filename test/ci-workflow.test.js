@@ -30,11 +30,13 @@ describe('CI workflow', () => {
     assert.strictEqual(job['runs-on'], 'ubuntu-latest');
   });
 
-  it('has checkout, setup-node@v4 with node 22.x + npm cache, npm ci, npm test, smoke-test steps', () => {
+  it('has matrix for minimum and latest Node 22, then runs npm ci/test/smoke', () => {
     const raw = readFileSync(WORKFLOW_PATH, 'utf8');
     wf = parse(raw);
     const job = wf.jobs.ci ?? wf.jobs.test ?? Object.values(wf.jobs)[0];
     const steps = job.steps;
+
+    assert.deepStrictEqual(job.strategy.matrix['node-version'], ['22.5.0', '22.x']);
 
     // checkout
     const checkout = steps.find(s => s.uses && s.uses.startsWith('actions/checkout'));
@@ -43,7 +45,7 @@ describe('CI workflow', () => {
     // setup-node@v4
     const setupNode = steps.find(s => s.uses && s.uses.startsWith('actions/setup-node@v4'));
     assert.ok(setupNode, 'has setup-node@v4 step');
-    assert.strictEqual(setupNode.with['node-version'], '22.x');
+    assert.strictEqual(setupNode.with['node-version'], '${{ matrix.node-version }}');
     assert.strictEqual(setupNode.with.cache, 'npm');
 
     // npm ci
